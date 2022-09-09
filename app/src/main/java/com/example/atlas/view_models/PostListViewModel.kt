@@ -14,6 +14,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -31,7 +32,13 @@ class PostListViewModel @Inject constructor(
     fun onEvent(postListEvents: PostListEvents){
         when(postListEvents){
             is PostListEvents.OnPostClicked->{
-                sendUiEvent(UiEvents.OnNavigate(Routes.ADD_EDIT_POST + "?postId=${postListEvents.post.id}"))
+                try {
+                    sendUiEvent(UiEvents.OnNavigate(Routes.ADD_EDIT_POST + "?postId=${postListEvents.post.id}"))
+                }catch (e: HttpException){
+                    sendUiEvent(UiEvents.ShowSnackBar(
+                        message = e.toString()
+                    ))
+                }
             }
             is PostListEvents.OnUndoDelete->{
                 deletedPost?.let { post->
